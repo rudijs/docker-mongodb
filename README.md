@@ -3,6 +3,10 @@ docker-mongodb
 
 MongoDB Docker image using mounted mongodb.conf and data directory
 
+## Pull the image (if you prefer to build your own see next step)
+
+    sudo docker pull rudijs/docker-mongodb
+    
 ## Build Image
 
 If you prefer to build the image instead of pulling from the public docker registry
