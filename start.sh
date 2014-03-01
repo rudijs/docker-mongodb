@@ -38,4 +38,5 @@ fi
 # Run services
 ##############
 
+# run in the foreground with -n
 supervisord -n
