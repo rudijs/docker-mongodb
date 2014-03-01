@@ -1,9 +1,40 @@
 docker-mongodb
 ==============
 
-MongoDB Docker image using mounted mongodb.conf and data directory
+MongoDB Docker image using a persistant mounted data directory with ssh for access to MongoDB admin.
 
-## Pull the image (if you prefer to build your own see next step)
+
+# Usage
+
+## Run the public image directly in a local container instance
+
+Create a shared data directory to be mounted into the container (this can be anywhere you prefer)
+
+    MONGO_DATA_DIR=/tmp/data
+    mkdir -p $MONGO_DATA_DIR
+
+Run the image: mount the data directory, set SSH port to connect on, set the MongoDB port
+
+    sudo docker run -d -v $MONGO_DATA_DIR:/data -p 2222:22 -p 27017:27017 -name mongodb rudijs/docker-mongodb
+
+SSH to the container, first get the random password created with the new container instance
+
+    sudo docker logs
+
+The SSH password by default is 24 characters long and looks like this example from `sudo docker logs`
+
+    ssh user password: qua0AhD3Ohv1vuzah2aeChae
+
+Now you can ssh in with:
+
+    ssh -p 2222 user@localhost
+
+If you repeatedly build new containers using the same port you'll need to clear out the old ssh keys with:
+
+    ssh-keygen -f ~/.ssh/known_hosts -R '[localhost]:2222'
+
+
+## Pull the image without running a new container (if you prefer to build your own see next step)
 
     sudo docker pull rudijs/docker-mongodb
     
@@ -11,77 +42,13 @@ MongoDB Docker image using mounted mongodb.conf and data directory
 
 If you prefer to build the image instead of pulling from the public docker registry
 
+    git clone git@github.com:rudijs/docker-mongodb.git
     cd docker-mongodb/
     sudo docker build -t <your-name>/mongodb .
 
 Review the new image
 
     sudo docker images
-
-## Using the MongoDB image
-
-Create a shared data directory to be mounted into the container (this can be anywhere you prefer)
-
-    MONGO_DATA_DIR=/tmp/data
-    mkdir -p $MONGO_DATA_DIR
-
-Copy in the mongodb configuration file to the shared data directory
-
-    cp mongodb.conf $MONGO_DATA_DIR
-
-Run the mongodb container (replace rudijs with <your-name> if you built your own docker image)
-
-    sudo docker run -d -v $MONGO_DATA_DIR:/data -p 27017:27017 -name mongodb rudijs/mongodb
-
-Check the status
-
-    sudo docker ps -a
-    sudo docker logs mongodb
-
-Review the shared data
-
-    du -sh $MONGO_DATA_DIR/*
-    tree $MONGO_DATA_DIR
-
-## Admin Shell
-
-For when you need the `mongo` shell to run command line operations against your mongo instance
-
-Get the IP address of the current running mongod
-
-    sudo docker inspect mongodb
-    IP_ADDRESS=$(sudo docker inspect mongodb | python -c 'import json,sys;obj=json.load(sys.stdin);print obj[0]["NetworkSettings"]["IPAddress"]')
-
-Create a new container, override the entrypoint and use the IP address from the above output (replace rudijs with <your-name> if you built your own docker image)
-
-    sudo docker run -i -t -name mongo -entrypoint="mongo" rudijs/mongodb $IP_ADDRESS
-
-## Mongo Import
-
-If you would like to load some data up
-
-Copy in the test database fixture data
-
-    cp test/fixtures/db/*.json $MONGO_DATA_DIR
-
-Get the IP address of the current running mongod using either of these commands
-
-    sudo docker inspect mongodb
-    sudo docker inspect mongodb | python -c 'import json,sys;obj=json.load(sys.stdin);print obj[0]["NetworkSettings"]["IPAddress"]'
-
-Create a new container mounting the shared data/ directory and overriding the entrypoint to drop into the command line
-(replace rudijs with <your-name> if you built your own docker image)
-
-    sudo docker run -i -t -name mongoimport -entrypoint="/bin/bash" -v $MONGO_DATA_DIR:/data rudijs/mongodb
-
-Inside the container use the IP from above with mongoimport (change the database naem and collections as required for your data)
-
-    mongoimport -h 172.17.0.2 --db demo --collection users --file /data/users.json
-    mongoimport -h 172.17.0.2 --db demo --collection articles --file /data/articles.json
-
-Exit `Ctrl-c` the container and clean up
-
-    rm $MONGO_DATA_DIR/*.json
 
 ## Some Docker Utility Commands
 
