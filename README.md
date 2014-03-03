@@ -29,6 +29,10 @@ Now you can ssh in with:
 
     ssh -p 2222 user@localhost
 
+Enable passwordless ssh log in with
+
+    ssh-copy-id '-p 2222 user@localhost'
+
 If you repeatedly build new containers using the same port you'll need to clear out the old ssh keys with:
 
     ssh-keygen -f ~/.ssh/known_hosts -R '[localhost]:2222'

@@ -55,6 +55,10 @@ ADD ./mongodb.conf /etc/mongodb.conf
 # Configure mongod start up
 ADD ./supervisord_mongodb.conf /etc/supervisor/conf.d/mongodb.conf
 
+# Install jq: http://stedolan.github.io/jq/
+RUN wget -nv http://stedolan.github.io/jq/download/linux64/jq -O /usr/bin/jq
+RUN chmod 755 /usr/bin/jq
+
 # Script to add user and copy supervisord configs
 ADD ./start.sh /start.sh
 
